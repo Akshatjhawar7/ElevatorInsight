@@ -21,8 +21,6 @@
 | `x4`           | float64     | 0 % | Proprietary sensor 4 |
 | `x5`           | float64     | 0 % | Proprietary sensor 5 |
 
-*(Update the “Notes” column as you learn what each `x*` channel measures.)*
-
 ---
 
 ## Proxy-label strategy
@@ -40,3 +38,4 @@ Because the file does **not** include an explicit failure flag, we generate a **
    else 0
 
 Expected positive prevalence ≈ 2 %.
+
