@@ -33,9 +33,14 @@ Because the file does **not** include an explicit failure flag, we generate a **
      `vibration` and `revolutions`.
 
 2. Label rule:
-   label = 1  if  (vibration_z > 3  OR  revolutions_z > 3)
-               sustained for ≥ 10 consecutive rows
+   label = 1  if  (vibration_z > 2  OR  revolutions_z > 2)
+               sustained for ≥ 3 consecutive rows
    else 0
+```
+### Rationale:
+Lowering the z-score threshold from 3 -> 2 and shortening the run length from 10 -> 3 increases senstitivity to smaller, shorter-lived anomalies, that could still be early signs of wear
 
-Expected positive prevalence ≈ 2 %.
+**Observed positive prevalence: ~ 0.89%** of rows (`proxy_anomaly = 1`).
+
+
 
