@@ -9,6 +9,7 @@ import aiohttp
 from replay import producer
 from advisor_agent import ElevatorAdvisor
 from slack_sender import send_slack_alert
+from tools.write_latest import write_latest
 
 SCORE_URL = "http://127.0.0.1:8000/score"
 RUN_MINUTES = 1
@@ -67,6 +68,7 @@ async def pipeline_loop():
             level = risk_to_level(risk)
             msg = f"Risk {risk*100:.1f}% -> {advice}"
             send_slack_alert(msg, level=level)
+            write_latest(id=ident, risk=risk, level=level, message=msg)
 
             ident = item.get("ID", "")
             print(f"[{idx}] ID={ident} risk={risk:.3f} level={level} | {advice}")

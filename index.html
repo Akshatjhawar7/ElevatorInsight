@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live Alert</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .left-info { border-left: 6px solid #36a64f; }
+    .left-warn { border-left: 6px solid #ffae42; }
+    .left-crit { border-left: 6px solid #ff0000; }
+  </style>
+</head>
+<body class="bg-zinc-100 text-zinc-900">
+  <main class="max-w-xl mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-3">Live Alert (Slack Mirror)</h1>
+    <p class="text-sm text-zinc-500 mb-4">This page polls <code>latest.json</code> every 5s and shows the most recent message your pipeline wrote (same one you sent to Slack).</p>
+
+    <article id="card" class="hidden border rounded-xl shadow-sm bg-white p-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-sm"><span class="font-semibold">Alert:</span> <span id="msg">—</span></div>
+          <div class="mt-1 text-xs text-zinc-500 space-x-2">
+            <span id="id"></span>
+            <span id="risk"></span>
+            <span id="level"></span>
+          </div>
+        </div>
+        <div class="text-xs text-zinc-500" id="ago">—</div>
+      </div>
+    </article>
+
+    <div id="empty" class="text-sm text-zinc-500">Waiting for first alert…</div>
+
+    <footer class="mt-8 text-xs text-zinc-400">Built with Student Chakra · GitHub Pages static poll</footer>
+  </main>
+
+  <script>
+    const URL_JSON = 'latest.json';
+    const POLL_MS = 5000;
+
+    function timeAgo(iso) {
+      if (!iso) return '—';
+      const t = new Date(iso).getTime();
+      const s = Math.max(0, Math.floor((Date.now() - t) / 1000));
+      if (s < 60) return `${s}s ago`;
+      const m = Math.floor(s / 60);
+      if (m < 60) return `${m}m ago`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h}h ago`;
+      const d = Math.floor(h / 24);
+      return `${d}d ago`;
+    }
+
+    function setCard(data) {
+      const card = document.getElementById('card');
+      const empty = document.getElementById('empty');
+      const msg = document.getElementById('msg');
+      const id = document.getElementById('id');
+      const risk = document.getElementById('risk');
+      const level = document.getElementById('level');
+      const ago = document.getElementById('ago');
+
+      if (!data || !data.message) {
+        card.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      card.classList.remove('hidden');
+
+      msg.textContent = data.message;
+      id.textContent = data.id ? `ID: ${data.id}` : '';
+      risk.textContent = Number.isFinite(Number(data.risk)) ? `• Risk: ${(Number(data.risk)*100).toFixed(1)}%` : '';
+      level.textContent = data.level ? `• Level: ${data.level}` : '';
+      ago.textContent = timeAgo(data.at);
+
+      card.classList.remove('left-info','left-warn','left-crit');
+      if (data.level === 'critical') card.classList.add('left-crit');
+      else if (data.level === 'warning') card.classList.add('left-warn');
+      else card.classList.add('left-info');
+    }
+
+    async function poll() {
+      try {
+        const res = await fetch(`${URL_JSON}?t=${Date.now()}`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          setCard(data);
+        }
+      } catch (e) { console.error(e); }
+      finally { setTimeout(poll, POLL_MS); }
+    }
+
+    poll();
+  </script>
+</body>
+</html>
